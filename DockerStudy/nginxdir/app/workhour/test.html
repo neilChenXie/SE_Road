@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>工时记录提交表单</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        input:focus, select:focus {
+            border-color: #3498db;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        button {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .submit-btn {
+            background-color: #3498db;
+            color: white;
+        }
+        .submit-btn:hover {
+            background-color: #2980b9;
+        }
+        .reset-btn {
+            background-color: #e74c3c;
+            color: white;
+        }
+        .reset-btn:hover {
+            background-color: #c0392b;
+        }
+        .response-box {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+            border-left: 4px solid #3498db;
+            display: none;
+        }
+        .success {
+            border-left-color: #2ecc71;
+            background-color: #eafaf1;
+        }
+        .error {
+            border-left-color: #e74c3c;
+            background-color: #fdedec;
+        }
+        .header-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .header-info summary {
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .header-info pre {
+            white-space: pre-wrap;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>工时记录提交表单</h1>
+        
+        <details class="header-info">
+            <summary>请求配置信息</summary>
+            <p><strong>请求链接:</strong> http://coms.fhdigz.com/dz/working/dz_working_hours_project/dzWorkingHoursProject.do?method=insertWorking</p>
+            <p><strong>Content-Type:</strong> application/x-www-form-urlencoded; charset=UTF-8</p>
+        </details>
+        
+        <form id="postForm">
+            <div class="form-group">
+                <label for="fd_type_id">项目名称</label>
+                <select id="fd_type_id" name="fd_type_id" required>
+                    <option value="">请选择项目名称</option>
+                    <option value="18d5096a70a4895d196e85948d593c39">阳江闸坡智慧渔港</option>
+                    <option value="1931a7d931b170272c132c6480794d78">广东省航道招标</option>
+                    <option value="197638ddd1664be025af4654ee4913c7">AI学习</option>
+                    <option value="19072987378cff59df5c03d47028600d">阳江风电运维基地</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="fd_nature_id">工作性质</label>
+                <select id="fd_nature_id" name="fd_nature_id" required>
+                    <option value="">请选择工作性质</option>
+                    <option value="18d4a164d9d08188ab25b1b42d9bbf9a">成果输出</option>
+                    <option value="18d4a171bb318a573c5788648cca3d29">差旅</option>
+                    <option value="18d4a16d252c3e6e790ea304cfc825a0">内部讨论</option>
+                    <option value="18d4a16f629a5cec35e699a4ca48eca2">外部接待</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="fd_working_date">工作日期</label>
+                <input type="date" id="fd_working_date" name="fd_working_date" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="thisday">工时（小时）</label>
+                <input type="number" id="thisday" name="thisday" min="0.5" max="24" step="0.5" placeholder="请输入工时，如：8" required>
+            </div>
+            
+            <div class="btn-group">
+                <button type="submit" class="submit-btn">提交数据</button>
+                <button type="reset" class="reset-btn">重置表单</button>
+            </div>
+        </form>
+        
+        <div id="responseBox" class="response-box"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('postForm');
+            const responseBox = document.getElementById('responseBox');
+            
+            // 设置默认日期为今天
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('fd_working_date').value = today;
+            
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // 收集表单数据
+                const formData = new FormData(form);
+                const data = new URLSearchParams();
+                for (const pair of formData) {
+                    data.append(pair[0], pair[1]);
+                }
+                
+                // 显示加载状态
+                responseBox.style.display = 'block';
+                responseBox.className = 'response-box';
+                responseBox.innerHTML = '<p>正在发送请求...</p>';
+                
+                // 发送POST请求
+                fetch('http://coms.fhdigz.com/dz/working/dz_working_hours_project/dzWorkingHoursProject.do?method=insertWorking', {
+                    method: 'POST',
+                    headers: {
+                        'Accept-Encoding': 'gzip, deflate',
+                        'Accept-Language': 'zh-CN,zh;q=0.9',
+                        'Connection': 'keep-alive',
+                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                        'Cookie': 'login_token_ec583190dcd12bca757dd13df10f59c3=799c3f33a4ae21a3defa8b6fabf9a830;username_ec583190dcd12bca757dd13df10f59c3=L20081760; login_sn_ec583190dcd12bca757dd13df10f59c3=84f3f06fe924f5c5a9f99991066c0d98;auth_type_ec583190dcd12bca757dd13df10f59c3=GovWeChat;LRToken=0605fc9140bdfcf21515cf1f535e2d93936843002c18748974a608bec16152e99627a1f3852048ede684b071f728265385ba0efe8a6bed2c57de65f0b6ee4855875cf176d4cb657a8407907cf482b39a76b78e597eb1f15015559a3816b00f749a6256fa3e3e5322695c4dbb7e4eab3557bea7bfa49c005d75da14e8b31e3717; SESSION=N2Y5NmFiNDEtZjY1Yy00MmU0LTg0YTQtNDc1MDNmYmI0NTIw;JSESSIONID=010A58F48A500974B6D000BD793A34AE',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: data
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP错误! 状态: ${response.status}`);
+                    }
+                    return response.text();
+                })
+                .then(result => {
+                    responseBox.className = 'response-box success';
+                    responseBox.innerHTML = `
+                        <h3>请求成功!</h3>
+                        <p>服务器响应:</p>
+                        <pre>${result}</pre>
+                    `;
+                })
+                .catch(error => {
+                    responseBox.className = 'response-box error';
+                    responseBox.innerHTML = `
+                        <h3>请求失败!</h3>
+                        <p>错误信息: ${error.message}</p>
+                        <p>注意: 由于浏览器的CORS策略，直接从前端JavaScript向不同域的服务器发送请求可能会被阻止。</p>
+                        <p>如果遇到CORS错误，您可能需要通过服务器端代理发送此请求。</p>
+                    `;
+                });
+            });
+            
+            // 重置按钮事件
+            form.addEventListener('reset', function() {
+                responseBox.style.display = 'none';
+                // 重置日期为今天
+                document.getElementById('fd_working_date').value = today;
+            });
+        });
+    </script>
+</body>
+</html>
