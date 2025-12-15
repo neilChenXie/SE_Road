@@ -1,0 +1,13 @@
+version: '3'
+services:
+  web:
+    image: nginx:latest
+    container_name: nginx_container
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/certs:/etc/nginx/certs
+      - ./app:/usr/share/nginx/html
+      - ./nginx/logs:/var/log/nginx
+    restart: always
