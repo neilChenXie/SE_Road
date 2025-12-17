@@ -15,6 +15,7 @@ desktop.ini
 # IDEs
 .vscode/
 .idea/
+*.code-workspace
 
 # nodejs
 node_modules/

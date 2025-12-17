@@ -3,301 +3,1474 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>工时记录提交 - 使用代理解决CORS问题</title>
+    <title>工时提交系统 - Vue + Flex</title>
+    <!-- Vue 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <style>
+        /* 全局样式和重置 */
         * {
-            box-sizing: border-box;
-            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
-        }
-        body {
             margin: 0;
-            padding: 20px;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            color: #333;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', sans-serif;
             line-height: 1.6;
+            color: #333;
+            background-color: #f5f7fa;
+            padding: 20px;
         }
+        
+        /* 容器和布局 */
         .container {
-            max-width: 800px;
+            max-width: 1200px;
             margin: 0 auto;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            padding: 30px;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
         }
-        h1 {
+        
+        /* 头部样式 */
+        .header {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            padding: 30px 40px;
             text-align: center;
-            color: #2c3e50;
+        }
+        
+        .header h1 {
+            font-size: 2.2rem;
             margin-bottom: 10px;
+            font-weight: 600;
         }
-        .subtitle {
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+        
+        /* 标签页导航 */
+        .tabs-nav {
+            display: flex;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .tab-btn {
+            flex: 1;
+            padding: 20px 10px;
             text-align: center;
-            color: #7f8c8d;
-            margin-bottom: 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+            color: #6c757d;
+            background: none;
+            border: none;
+            outline: none;
         }
-        .form-group {
+        
+        .tab-btn:hover {
+            background-color: #e9ecef;
+            color: #495057;
+        }
+        
+        .tab-btn.active {
+            background-color: white;
+            border-bottom: 3px solid #2575fc;
+            color: #2575fc;
+        }
+        
+        /* 标签页内容 */
+        .tab-content {
+            padding: 30px;
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* 表单样式 */
+        .form-section {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        
+        /* Flex 表单布局 */
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
             margin-bottom: 20px;
         }
-        label {
+        
+        .form-group {
+            flex: 1 1 calc(50% - 20px);
+            min-width: 250px;
+        }
+        
+        .form-group.full-width {
+            flex: 1 1 100%;
+        }
+        
+        .form-label {
             display: block;
             margin-bottom: 8px;
             font-weight: 600;
-            color: #2c3e50;
+            color: #495057;
         }
-        input, select {
+        
+        .form-control {
             width: 100%;
             padding: 12px 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
             font-size: 16px;
-            transition: border-color 0.3s;
+            transition: border-color 0.3s, box-shadow 0.3s;
         }
-        input:focus, select:focus {
-            border-color: #3498db;
+        
+        .form-control:focus {
+            border-color: #2575fc;
             outline: none;
-            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+            box-shadow: 0 0 0 3px rgba(37, 117, 252, 0.1);
         }
+        
+        textarea.form-control {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        /* 按钮样式 */
         .btn-group {
             display: flex;
+            flex-wrap: wrap;
             gap: 15px;
-            margin-top: 30px;
+            margin-top: 25px;
         }
-        button {
-            flex: 1;
-            padding: 14px;
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 24px;
             border: none;
-            border-radius: 5px;
+            border-radius: 6px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
+            text-decoration: none;
         }
-        .submit-btn {
-            background-color: #3498db;
+        
+        .btn-primary {
+            background-color: #2575fc;
             color: white;
         }
-        .submit-btn:hover {
-            background-color: #2980b9;
+        
+        .btn-primary:hover {
+            background-color: #1c6ae4;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37, 117, 252, 0.2);
         }
-        .reset-btn {
-            background-color: #e74c3c;
+        
+        .btn-success {
+            background-color: #28a745;
             color: white;
         }
-        .reset-btn:hover {
-            background-color: #c0392b;
+        
+        .btn-success:hover {
+            background-color: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.2);
         }
-        .response-box {
-            margin-top: 30px;
+        
+        .btn-warning {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        
+        .btn-warning:hover {
+            background-color: #e0a800;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 193, 7, 0.2);
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #5a6268;
+            transform: translateY(-2px);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        /* 加载动画 */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 8px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* 状态和响应框 */
+        .status-box {
+            margin-top: 25px;
             padding: 20px;
-            border-radius: 5px;
-            background-color: #f8f9fa;
-            border-left: 4px solid #3498db;
+            border-radius: 8px;
             display: none;
         }
-        .success {
-            border-left-color: #2ecc71;
-            background-color: #eafaf1;
+        
+        .status-box.active {
+            display: block;
         }
-        .error {
-            border-left-color: #e74c3c;
-            background-color: #fdedec;
+        
+        .status-box.success {
+            background-color: #d4edda;
+            border-left: 5px solid #28a745;
         }
-        .info-box {
-            background-color: #e8f4f8;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
+        
+        .status-box.error {
+            background-color: #f8d7da;
+            border-left: 5px solid #dc3545;
         }
-        .code-block {
-            background-color: #2c3e50;
-            color: #ecf0f1;
-            padding: 15px;
-            border-radius: 5px;
-            font-family: 'Courier New', monospace;
-            overflow-x: auto;
-            margin: 15px 0;
+        
+        .status-box.info {
+            background-color: #d1ecf1;
+            border-left: 5px solid #17a2b8;
         }
-        .tab-container {
+        
+        /* 进度条 */
+        .progress-container {
             margin: 20px 0;
         }
-        .tabs {
+        
+        .progress-label {
             display: flex;
-            border-bottom: 1px solid #ddd;
+            justify-content: space-between;
+            margin-bottom: 8px;
         }
-        .tab {
-            padding: 10px 20px;
-            cursor: pointer;
-            border: 1px solid transparent;
-            border-bottom: none;
-            border-radius: 5px 5px 0 0;
-            margin-right: 5px;
+        
+        .progress-bar {
+            height: 20px;
+            background-color: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
         }
-        .tab.active {
-            background-color: #f5f7fa;
-            border-color: #ddd;
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(to right, #2575fc, #6a11cb);
+            width: 0%;
+            transition: width 0.5s ease;
         }
-        .tab-content {
-            display: none;
+        
+        /* 项目列表 */
+        .projects-list {
+            margin-top: 20px;
+        }
+        
+        .project-item {
+            background-color: white;
+            border-radius: 8px;
             padding: 20px;
-            background-color: #f5f7fa;
-            border-radius: 0 0 5px 5px;
+            margin-bottom: 15px;
+            border-left: 4px solid #2575fc;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
         }
-        .tab-content.active {
-            display: block;
+        
+        .project-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .project-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .project-percentage {
+            font-weight: 600;
+            color: #2575fc;
+        }
+        
+        /* 日期列表 */
+        .days-list {
+            margin-top: 20px;
+        }
+        
+        .day-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            background-color: white;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            border-left: 3px solid #28a745;
+        }
+        
+        .day-date {
+            font-weight: 600;
+        }
+        
+        .day-hours {
+            color: #28a745;
+            font-weight: 600;
+        }
+        
+        /* 响应框 */
+        .response-container {
+            margin-top: 25px;
+        }
+        
+        .response-box {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .response-item {
+            padding: 10px 15px;
+            background-color: white;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            border-left: 3px solid #2575fc;
+        }
+        
+        .response-success {
+            border-left-color: #28a745;
+        }
+        
+        .response-error {
+            border-left-color: #dc3545;
+        }
+        
+        /* 统计卡片 */
+        .stats-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .stat-card {
+            flex: 1 1 calc(33.333% - 20px);
+            min-width: 200px;
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2575fc;
+            margin: 10px 0;
+        }
+        
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        /* 页脚 */
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+            font-size: 0.9rem;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .form-group {
+                flex: 1 1 100%;
+            }
+            
+            .stat-card {
+                flex: 1 1 100%;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+            
+            .tabs-nav {
+                flex-direction: column;
+            }
+            
+            .tab-btn {
+                padding: 15px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .container {
+                border-radius: 0;
+            }
+            
+            .header, .tab-content {
+                padding: 20px;
+            }
+            
+            .form-section {
+                padding: 20px;
+            }
+        }
+        
+        /* 工具类 */
+        .text-center {
+            text-align: center;
+        }
+        
+        .mb-3 {
+            margin-bottom: 1rem;
+        }
+        
+        .mb-4 {
+            margin-bottom: 1.5rem;
+        }
+        
+        .mt-3 {
+            margin-top: 1rem;
+        }
+        
+        .mt-4 {
+            margin-top: 1.5rem;
+        }
+        
+        .d-none {
+            display: none;
+        }
+        
+        .d-flex {
+            display: flex;
+        }
+        
+        .flex-column {
+            flex-direction: column;
+        }
+        
+        .align-items-center {
+            align-items: center;
+        }
+        
+        .justify-content-between {
+            justify-content: space-between;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>工时记录提交表单</h1>
-        <p class="subtitle">通过服务器端代理解决CORS问题</p>
-        
-        <div class="info-box">
-            <h3>解决方案说明</h3>
-            <p>由于浏览器的CORS策略，直接从前端JavaScript向不同域的服务器发送请求会被阻止。</p>
-            <p>本示例通过以下方式解决：前端 → 同源代理服务器 → 目标服务器</p>
-        </div>
-        
-        <div class="tab-container">
-            <div class="tabs">
-                <div class="tab active" data-tab="form">提交单日工时</div>
-                <div class="tab" data-tab="proxy-code">提交多日工时</div>
-                <div class="tab" data-tab="explanation">工作原理</div>
-            </div>
+    <div id="app">
+        <div class="container">
+            <!-- 头部 -->
+            <header class="header">
+                <h1>工时提交系统</h1>
+                <p>使用 Vue.js 和 Flex 布局构建的多功能工时管理工具</p>
+            </header>
             
-            <div class="tab-content active" id="form-tab">
-                <form id="postForm">
-                    <div class="form-group">
-                        <label for="fd_type_id">项目名称</label>
-                        <select id="fd_type_id" name="fd_type_id" required>
-                            <option value="1931a7d931b170272c132c6480794d78">航道投标</option>
-                            <option value="18d5096a70a4895d196e85948d593c39">阳江闸坡智慧渔港</option>
-                            <option value="1931a7d931b170272c132c6480794d78">广东省航道招标</option>
-                            <option value="197638ddd1664be025af4654ee4913c7">AI学习</option>
-                            <option value="19072987378cff59df5c03d47028600d">阳江风电运维基地</option>
-                        </select>
+            <!-- 标签页导航 -->
+            <nav class="tabs-nav">
+                <button 
+                    v-for="(tab, index) in tabs" 
+                    :key="index"
+                    class="tab-btn" 
+                    :class="{active: activeTab === index}"
+                    @click="switchTab(index)"
+                >
+                    {{ tab.name }}
+                </button>
+            </nav>
+            
+            <!-- 单日工时提交 -->
+            <section class="tab-content" :class="{active: activeTab === 0}">
+                <div class="form-section">
+                    <h2 class="section-title">提交单日工时</h2>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="singleProjectType" class="form-label">项目名称</label>
+                            <select id="singleProjectType" class="form-control" v-model="singleDayData.fd_type_id">
+                                <option value="">请选择项目名称</option>
+                                <option v-for="type in projectTypes" :value="type.id">{{ type.name }}</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="singleProjectNature" class="form-label">工作性质</label>
+                            <select id="singleProjectNature" class="form-control" v-model="singleDayData.fd_nature_id">
+                                <option value="">请选择工作性质</option>
+                                <option v-for="nature in projectNatures" :value="nature.id">{{ nature.name }}</option>
+                            </select>
+                        </div>
                     </div>
                     
-                    <div class="form-group">
-                        <label for="fd_nature_id">工作性质</label>
-                        <select id="fd_nature_id" name="fd_nature_id" required>
-                            <option value="">请选择工作性质</option>
-                            <option value="18d4a164d9d08188ab25b1b42d9bbf9a">成果输出</option>
-                            <option value="18d4a171bb318a573c5788648cca3d29">差旅</option>
-                            <option value="18d4a16d252c3e6e790ea304cfc825a0">内部讨论</option>
-                            <option value="18d4a16f629a5cec35e699a4ca48eca2">外部接待</option>
-                        </select>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="singleDate" class="form-label">工作日期</label>
+                            <input type="date" id="singleDate" class="form-control" v-model="singleDayData.fd_working_date">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="singleHours" class="form-label">工时（小时）</label>
+                            <input type="number" id="singleHours" class="form-control" v-model="singleDayData.thisday" min="0" max="24" step="0.5" placeholder="例如：8">
+                        </div>
                     </div>
                     
-                    <div class="form-group">
-                        <label for="fd_working_date">工作日期</label>
-                        <input type="date" id="fd_working_date" name="fd_working_date" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="thisday">工时（小时）</label>
-                        <input type="number" id="thisday" name="thisday" min="0.5" max="24" step="0.5" placeholder="请输入工时，如：8" required>
+                    <div class="form-group full-width">
+                        <label for="singleDescription" class="form-label">Cookie</label>
+                        <textarea id="singleDescription" class="form-control" v-model="singleDayData.cookie" rows="3" placeholder="请填写有效Cookie"></textarea>
                     </div>
                     
                     <div class="btn-group">
-                        <button type="submit" class="submit-btn">通过代理提交数据</button>
-                        <button type="reset" class="reset-btn">重置表单</button>
+                        <button class="btn btn-primary" @click="submitSingleDay" :disabled="singleSubmitting">
+                            <span v-if="singleSubmitting" class="loading-spinner"></span>
+                            {{ singleSubmitting ? '提交中...' : '提交单日工时' }}
+                        </button>
+                        <button class="btn btn-secondary" @click="resetSingleDayForm">重置表单</button>
                     </div>
-                </form>
+                </div>
                 
-                <div id="responseBox" class="response-box"></div>
-            </div>
+                <div class="status-box" :class="{'active': singleDayResponse, 'success': singleDaySuccess, 'error': !singleDaySuccess}">
+                    <h3>{{ singleDaySuccess ? '提交成功' : '提交失败' }}</h3>
+                    <p v-if="singleDayResponse" class="mt-3">{{ singleDayResponse }}</p>
+                </div>
+            </section>
+            
+            <!-- 多日工时提交 -->
+            <section class="tab-content" :class="{active: activeTab === 1}">
+                <div class="form-section">
+                    <h2 class="section-title">提交多日工时</h2>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="multiProjectType" class="form-label">项目名称</label>
+                            <select id="multiProjectType" class="form-control" v-model="multiDayData.fd_type_id">
+                                <option value="">请选择项目名称</option>
+                                <option v-for="type in projectTypes" :value="type.id">{{ type.name }}</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="multiProjectNature" class="form-label">工作性质</label>
+                            <select id="multiProjectNature" class="form-control" v-model="multiDayData.fd_nature_id">
+                                <option value="">请选择工作性质</option>
+                                <option v-for="nature in projectNatures" :value="nature.id">{{ nature.name }}</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="startDate" class="form-label">开始日期</label>
+                            <input type="date" id="startDate" class="form-control" v-model="multiDayData.start_date">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="endDate" class="form-label">结束日期</label>
+                            <input type="date" id="endDate" class="form-control" v-model="multiDayData.end_date">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="dailyHours" class="form-label">每日工时（小时）</label>
+                            <input type="number" id="dailyHours" class="form-control" v-model="multiDayData.daily_hours" min="0" max="24" step="0.5" placeholder="例如：8">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="excludeWeekends" class="form-label">排除周末</label>
+                            <select id="excludeWeekends" class="form-control" v-model="multiDayData.exclude_weekends">
+                                <option :value="true">是</option>
+                                <option :value="false">否</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <label for="multiDescription" class="form-label">Cookie</label>
+                        <textarea id="multiDescription" class="form-control" v-model="multiDayData.cookie" rows="3" placeholder="请填写有效Cookie"></textarea>
+                    </div>
+                    
+                    <div v-if="multiDayData.days && multiDayData.days.length > 0" class="days-list">
+                        <h3 class="mb-3">将提交以下日期的工时：</h3>
+                        <div class="day-item" v-for="(day, index) in multiDayData.days" :key="index">
+                            <span class="day-date">{{ day.fd_working_date }}</span>
+                            <span class="day-hours">{{ day.thisday }} 小时</span>
+                        </div>
+                    </div>
+                    
+                    <div class="btn-group">
+                        <button class="btn btn-warning" @click="generateMultiDays" :disabled="multiDayGenerating">
+                            <span v-if="multiDayGenerating" class="loading-spinner"></span>
+                            {{ multiDayGenerating ? '生成中...' : '生成多日数据' }}
+                        </button>
+                        <button class="btn btn-primary" @click="submitMultiDays" :disabled="multiDaySubmitting || !multiDayData.days || multiDayData.days.length === 0">
+                            <span v-if="multiDaySubmitting" class="loading-spinner"></span>
+                            {{ multiDaySubmitting ? '提交中...' : '提交多日工时' }}
+                        </button>
+                        <button class="btn btn-secondary" @click="resetMultiDayForm">重置表单</button>
+                    </div>
+                    
+                    <div v-if="multiDaySubmitting" class="progress-container">
+                        <div class="progress-label">
+                            <span>提交进度</span>
+                            <span>{{ multiDayProgress }}% ({{ multiDayCompleted }}/{{ multiDayTotal }})</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" :style="{width: multiDayProgress + '%'}"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div v-if="multiDayResponses.length > 0" class="response-container">
+                    <h3 class="mb-3">提交结果</h3>
+                    <div class="response-box">
+                        <div class="response-item" v-for="(response, index) in multiDayResponses" :key="index" :class="{'response-success': response.success, 'response-error': !response.success}">
+                            <div><strong>{{ response.date }}</strong> - {{ response.success ? '成功' : '失败' }}</div>
+                            <div v-if="!response.success" class="mt-3">错误: {{ response.message }}</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 按比例分配工时 -->
+            <section class="tab-content" :class="{active: activeTab === 2}">
+                <div class="form-section">
+                    <h2 class="section-title">按比例分配工时</h2>
+                    
+                    <div v-if="distributionStats.totalDays > 0" class="stats-container">
+                        <div class="stat-card">
+                            <div class="stat-label">总天数</div>
+                            <div class="stat-value">{{ distributionStats.totalDays }}</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">总工时</div>
+                            <div class="stat-value">{{ distributionStats.totalHours }}</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">项目数量</div>
+                            <div class="stat-value">{{ distributionStats.projectCount }}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="distStartDate" class="form-label">开始日期</label>
+                            <input type="date" id="distStartDate" class="form-control" v-model="distributionData.start_date">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="distEndDate" class="form-label">结束日期</label>
+                            <input type="date" id="distEndDate" class="form-control" v-model="distributionData.end_date">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="dailyTotalHours" class="form-label">每日总工时（小时）</label>
+                            <input type="number" id="dailyTotalHours" class="form-control" v-model="distributionData.daily_total_hours" min="1" max="24" step="0.5" placeholder="例如：8">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="fluctuation" class="form-label">每日波动范围</label>
+                            <input type="number" id="fluctuation" class="form-control" v-model="distributionData.fluctuation" min="0" max="100" step="5" placeholder="例如：20">%
+                        </div>
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <label for="excludeWeekendsDist" class="form-label">排除周末</label>
+                        <select id="excludeWeekendsDist" class="form-control" v-model="distributionData.exclude_weekends">
+                            <option :value="true">是</option>
+                            <option :value="false">否</option>
+                        </select>
+                    </div>
 
+                    <div class="form-group full-width">
+                        <label for="distCookie" class="form-label">Cookie</label>
+                        <textarea id="distCookie" class="form-control" v-model="distributionData.cookie" rows="2" placeholder="请填写有效Cookie"></textarea>
+                    </div>
+                    
+                    <h3 class="mb-3">项目分配比例</h3>
+                    
+                    <div class="projects-list">
+                        <div class="project-item" v-for="(project, index) in distributionData.projects" :key="index">
+                            <div class="project-header">
+                                <div class="project-title">项目 {{ index + 1 }}</div>
+                                <div class="project-percentage">{{ project.percentage }}%</div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">项目名称</label>
+                                    <select class="form-control" v-model="project.fd_type_id">
+                                        <option value="">请选择项目名称</option>
+                                        <option v-for="type in projectTypes" :value="type.id">{{ type.name }}</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">工作性质</label>
+                                    <select class="form-control" v-model="project.fd_nature_id">
+                                        <option value="">请选择工作性质</option>
+                                        <option v-for="nature in projectNatures" :value="nature.id">{{ nature.name }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label class="form-label">分配比例 (%)</label>
+                                        <input type="number" class="form-control" v-model="project.percentage" min="1" max="100" step="1" @input="updatePercentages">
+                                    </div>
+                                </div>
+                            
+                            <button class="btn btn-secondary" @click="removeProject(index)" v-if="distributionData.projects.length > 1">删除项目</button>
+                        </div>
+                    </div>
+                    
+                    <div class="btn-group">
+                        <button class="btn btn-success" @click="addProject">添加项目</button>
+                        <button class="btn btn-warning" @click="generateDistribution" :disabled="distributionGenerating">
+                            <span v-if="distributionGenerating" class="loading-spinner"></span>
+                            {{ distributionGenerating ? '生成中...' : '生成分配计划' }}
+                        </button>
+                        <button class="btn btn-primary" @click="submitDistribution" :disabled="distributionSubmitting || !distributionData.days || distributionData.days.length === 0">
+                            <span v-if="distributionSubmitting" class="loading-spinner"></span>
+                            {{ distributionSubmitting ? '提交中...' : '提交分配计划' }}
+                        </button>
+                        <button class="btn btn-secondary" @click="resetDistributionForm">重置表单</button>
+                    </div>
+                    
+                    <div v-if="distributionData.days && distributionData.days.length > 0" class="days-list">
+                        <h3 class="mb-3">工时分配计划（共 {{ distributionData.days.length }} 天）</h3>
+                        <div class="day-item" v-for="(day, dayIndex) in distributionData.days.slice(0, 5)" :key="dayIndex">
+                            <div>
+                                <div class="day-date">{{ day.date }}</div>
+                                <div style="font-size: 0.9rem; color: #6c757d;">
+                                    <span v-for="(task, taskIndex) in day.tasks" :key="taskIndex">
+                                        {{ getProjectName(task.fd_type_id) }}-{{ getProjectNatures(task.fd_nature_id) }}: {{ task.hours.toFixed(1) }}h{{ taskIndex < day.tasks.length - 1 ? ', ' : '' }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="day-hours">总计: {{ day.totalHours.toFixed(1) }} 小时</div>
+                        </div>
+                        <div v-if="distributionData.days.length > 5" class="text-center mt-3">
+                            还有 {{ distributionData.days.length - 5 }} 天...
+                        </div>
+                    </div>
+                    
+                    <div v-if="distributionSubmitting" class="progress-container">
+                        <div class="progress-label">
+                            <span>提交进度</span>
+                            <span>{{ distributionProgress }}% ({{ distributionCompleted }}/{{ distributionTotal }})</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" :style="{width: distributionProgress + '%'}"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div v-if="distributionResponses.length > 0" class="response-container">
+                    <h3 class="mb-3">提交结果</h3>
+                    <div class="response-box">
+                        <div class="response-item" v-for="(response, index) in distributionResponses" :key="index" :class="{'response-success': response.success, 'response-error': !response.success}">
+                            <div><strong>{{ response.date }}</strong> - 项目: {{ response.projectName }} - {{ response.success ? '成功' : '失败' }}</div>
+                            <div v-if="!response.success" class="mt-3">错误: {{ response.message }}</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 页脚 -->
+            <footer class="footer">
+                <p>工时提交系统 &copy; 2023 - 使用 Vue.js 和 Flex 布局构建</p>
+            </footer>
         </div>
-    
+    </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const form = document.getElementById('postForm');
-            const responseBox = document.getElementById('responseBox');
-            const tabs = document.querySelectorAll('.tab');
-            const tabContents = document.querySelectorAll('.tab-content');
-            
-            // 设置默认日期为今天
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('fd_working_date').value = today;
-            
-            // 标签页切换
-            tabs.forEach(tab => {
-                tab.addEventListener('click', function() {
-                    const tabId = this.getAttribute('data-tab');
-                    
-                    // 移除所有活动状态
-                    tabs.forEach(t => t.classList.remove('active'));
-                    tabContents.forEach(tc => tc.classList.remove('active'));
-                    
-                    // 添加当前活动状态
-                    this.classList.add('active');
-                    document.getElementById(`${tabId}-tab`).classList.add('active');
+        // 代理服务器地址（可统一配置）
+        const PROXY_URL = 'http://localhost:3001/proxy/working-hours';
+
+        const { createApp, ref, onMounted, watch } = Vue;
+        
+        createApp({
+            setup() {
+                // 选项卡状态
+                const activeTab = ref(0);
+                const tabs = [
+                    { name: '单日工时提交' },
+                    { name: '多日工时提交' },
+                    { name: '按比例分配工时' }
+                ];
+                
+                // 项目名称
+                const projectTypes = ref([
+                    { id: '1931a7d931b170272c132c6480794d78', name: '航道投标' },
+                    { id: "18d5096a70a4895d196e85948d593c39", name: '阳江闸坡智慧渔港' },
+                    { id: "19766ca7011a697618ab63e46cface6c", name: '渔港经济区' },
+                    { id: "197638ddd1664be025af4654ee4913c7", name: 'AI-学习' },
+                    { id: "19072987378cff59df5c03d47028600d", name: '阳江风电运维基地' },
+                    { id: "19072bbe83dd3aabbebe92241e99eb69", name: '职能工作' },
+                    { id: "1907bcaf09290450c261b984792b450d", name: '党建工作' }
+                ]);
+                
+                //工作类型
+                const projectNatures = ref([
+                    { id: "18d4a164d9d08188ab25b1b42d9bbf9a", name: '成果输出' },
+                    { id: "18d4a171bb318a573c5788648cca3d29", name: '差旅' },
+                    { id: "18d4a16d252c3e6e790ea304cfc825a0", name: '内部讨论' },
+                    { id: "18d4a16f629a5cec35e699a4ca48eca2", name: '外部接待' }
+                ]);
+                
+                // 单日工时数据
+                const singleDayData = ref({
+                    fd_type_id: '',
+                    fd_nature_id: '',
+                    fd_working_date: new Date().toISOString().split('T')[0],
+                    thisday: 8,
+                    cookie: ''
                 });
-            });
-            
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
                 
-                // 收集表单数据
-                const formData = new FormData(form);
-                const data = new URLSearchParams();
-                for (const pair of formData) {
-                    data.append(pair[0], pair[1]);
-                }
+                const singleSubmitting = ref(false);
+                const singleDayResponse = ref('');
+                const singleDaySuccess = ref(false);
                 
-                // 显示加载状态
-                responseBox.style.display = 'block';
-                responseBox.className = 'response-box';
-                responseBox.innerHTML = '<p>正在通过代理服务器发送请求...</p>';
+                // 多日工时数据
+                const multiDayData = ref({
+                    fd_type_id: '',
+                    fd_nature_id: '',
+                    start_date: new Date().toISOString().split('T')[0],
+                    end_date: new Date().toISOString().split('T')[0],
+                    daily_hours: 8,
+                    exclude_weekends: true,
+                    cookie: '',
+                    days: []
+                });
                 
-                // 通过代理服务器发送POST请求
-                // 注意：这里假设代理服务器运行在 http://localhost:3001
-                fetch('http://localhost:3001/proxy/working-hours', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-                    },
-                    body: data
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP错误! 状态: ${response.status}`);
+                const multiDayGenerating = ref(false);
+                const multiDaySubmitting = ref(false);
+                const multiDayProgress = ref(0);
+                const multiDayCompleted = ref(0);
+                const multiDayTotal = ref(0);
+                const multiDayResponses = ref([]);
+                
+                // 按比例分配数据
+                const distributionData = ref({
+                    start_date: new Date().toISOString().split('T')[0],
+                    end_date: new Date().toISOString().split('T')[0],
+                    daily_total_hours: 8,
+                    fluctuation: 20,
+                    exclude_weekends: true,
+                    cookie: '',
+                    projects: [
+                        { 
+                            fd_type_id: 1,
+                            fd_nature_id: 1,
+                            percentage: 40
+                        },
+                        { 
+                            fd_type_id: 2,
+                            fd_nature_id: 2,
+                            percentage: 60
+                        }
+                    ],
+                    days: []
+                });
+                
+                const distributionGenerating = ref(false);
+                const distributionSubmitting = ref(false);
+                const distributionProgress = ref(0);
+                const distributionCompleted = ref(0);
+                const distributionTotal = ref(0);
+                const distributionResponses = ref([]);
+                const distributionStats = ref({
+                    totalDays: 0,
+                    totalHours: 0,
+                    projectCount: 0
+                });
+                
+                // 切换标签页
+                const switchTab = (index) => {
+                    activeTab.value = index;
+                };
+                
+                // 重置单日表单
+                const resetSingleDayForm = () => {
+                    singleDayData.value = {
+                        fd_type_id: '',
+                        fd_nature_id: '',
+                        fd_working_date: new Date().toISOString().split('T')[0],
+                        thisday: 8,
+                        cookie: ''
+                    };
+                    singleDayResponse.value = '';
+                };
+                
+                // 提交单日工时
+                const submitSingleDay = async () => {
+                    // 验证表单（允许填写 0 小时）
+                    if (!singleDayData.value.fd_type_id || !singleDayData.value.fd_nature_id || 
+                        !singleDayData.value.fd_working_date || !singleDayData.value.cookie) {
+                        singleDayResponse.value = '请填写所有必填字段';
+                        singleDaySuccess.value = false;
+                        return;
                     }
-                    return response.text();
-                })
-                .then(result => {
-                    responseBox.className = 'response-box success';
-                    responseBox.innerHTML = `
-                        <h3>请求成功!</h3>
-                        <p>通过代理服务器成功发送请求到目标服务器。</p>
-                        <p>服务器响应:</p>
-                        <pre>${result}</pre>
-                    `;
-                })
-                .catch(error => {
-                    responseBox.className = 'response-box error';
-                    responseBox.innerHTML = `
-                        <h3>请求失败!</h3>
-                        <p>错误信息: ${error.message}</p>
-                        <p>可能的原因：</p>
-                        <ul>
-                            <li>代理服务器未运行</li>
-                            <li>代理服务器地址不正确</li>
-                            <li>目标服务器不可用</li>
-                        </ul>
-                        <p>请确保代理服务器正在运行，并且可以访问目标服务器。</p>
-                    `;
+
+                    // 允许不填，如果填了必须为数字且 >= 0
+                    const hoursNum = parseFloat(singleDayData.value.thisday);
+                    if (hoursNum < 0) {
+                        singleDayResponse.value = '请输入有效的工时（允许为0）';
+                        singleDaySuccess.value = false;
+                        return;
+                    }
+                    
+                    singleSubmitting.value = true;
+                    
+                    // 构建请求数据
+                    const formData = new URLSearchParams();
+                    formData.append('fd_type_id', singleDayData.value.fd_type_id);
+                    formData.append('fd_nature_id', singleDayData.value.fd_nature_id);
+                    formData.append('fd_working_date', singleDayData.value.fd_working_date);
+                    formData.append('thisday', singleDayData.value.thisday);
+                    // 传递 cookie 字段到代理服务器
+                    formData.append('cookie', singleDayData.value.cookie);
+                    
+                    try {
+                        // 注意：这里需要使用代理服务器地址
+
+                        const response = await fetch(PROXY_URL, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                            },
+                            body: formData
+                        });
+                        
+                        if (!response.ok) {
+                            throw new Error(`HTTP错误! 状态: ${response.status}`);
+                        }
+                        
+                        const result = await response.text();
+                        singleDayResponse.value = `提交成功: ${result}`;
+                        singleDaySuccess.value = true;
+                        
+                    } catch (error) {
+                        singleDayResponse.value = `提交失败: ${error.message}`;
+                        singleDaySuccess.value = false;
+                        console.error('提交失败:', error);
+                    } finally {
+                        singleSubmitting.value = false;
+                    }
+                };
+                
+                // 生成多日数据
+                const generateMultiDays = () => {
+                    multiDayGenerating.value = true;
+
+                    // 校验所有必填字段（允许每日工时为 0 或不填）
+                    if (!multiDayData.value.fd_type_id || !multiDayData.value.fd_nature_id ||
+                        !multiDayData.value.start_date || !multiDayData.value.end_date ||
+                        !multiDayData.value.cookie) {
+                        alert('请填写所有必填字段：项目名称、工作性质、开始日期、结束日期和Cookie');
+                        multiDayGenerating.value = false;
+                        return;
+                    }
+
+                    // 校验每日工时为数字且不为负；如果不填则视为 0
+                    let dailyHoursNum = parseFloat(multiDayData.value.daily_hours);
+                    if (isNaN(dailyHoursNum)) {
+                        //dailyHoursNum = 0;
+                    }
+                    if (dailyHoursNum < 0) {
+                        alert('请输入有效的每日工时（不能为负）');
+                        multiDayGenerating.value = false;
+                        return;
+                    }
+
+                    // 模拟生成数据的延迟
+                    setTimeout(() => {
+                        const startDate = new Date(multiDayData.value.start_date);
+                        const endDate = new Date(multiDayData.value.end_date);
+
+                        if (startDate > endDate) {
+                            alert('开始日期不能晚于结束日期');
+                            multiDayGenerating.value = false;
+                            return;
+                        }
+
+                        const days = [];
+                        const currentDate = new Date(startDate);
+
+                        while (currentDate <= endDate) {
+                            // 检查是否排除周末
+                            const dayOfWeek = currentDate.getDay();
+                            const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+
+                            if (!multiDayData.value.exclude_weekends || !isWeekend) {
+                                const dateStr = currentDate.toISOString().split('T')[0];
+
+                                days.push({
+                                    fd_type_id: multiDayData.value.fd_type_id,
+                                    fd_nature_id: multiDayData.value.fd_nature_id,
+                                    fd_working_date: dateStr,
+                                    thisday: dailyHoursNum,
+                                    cookie: multiDayData.value.cookie
+                                });
+                            }
+
+                            currentDate.setDate(currentDate.getDate() + 1);
+                        }
+
+                        multiDayData.value.days = days;
+                        multiDayGenerating.value = false;
+                    }, 500);
+                };
+                
+                // 重置多日表单
+                const resetMultiDayForm = () => {
+                    multiDayData.value = {
+                        fd_type_id: '',
+                        fd_nature_id: '',
+                        start_date: new Date().toISOString().split('T')[0],
+                        end_date: new Date().toISOString().split('T')[0],
+                        daily_hours: 8,
+                        exclude_weekends: true,
+                        cookie: '',
+                        days: []
+                    };
+                    multiDayResponses.value = [];
+                };
+                
+                // 提交多日工时
+                const submitMultiDays = async () => {
+                    if (multiDayData.value.days.length === 0) {
+                        alert('请先生成多日数据');
+                        return;
+                    }
+                    
+                    multiDaySubmitting.value = true;
+                    multiDayCompleted.value = 0;
+                    multiDayTotal.value = multiDayData.value.days.length;
+                    multiDayResponses.value = [];
+                    
+                    // 对每一天执行实际提交（向代理服务器发送），包含 cookie 字段
+                    for (let i = 0; i < multiDayData.value.days.length; i++) {
+                        const day = multiDayData.value.days[i];
+
+                        const formData = new URLSearchParams();
+                        formData.append('fd_type_id', day.fd_type_id);
+                        formData.append('fd_nature_id', day.fd_nature_id);
+                        formData.append('fd_working_date', day.fd_working_date);
+                        formData.append('thisday', day.thisday);
+                        if (day.cookie) formData.append('cookie', day.cookie);
+
+                        try {
+                            const response = await fetch(PROXY_URL, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+                                },
+                                body: formData
+                            });
+
+                            if (!response.ok) {
+                                multiDayResponses.value.push({ date: day.fd_working_date, success: false, message: `HTTP ${response.status}` });
+                            } else {
+                                const resultText = await response.text().catch(() => '提交成功');
+                                multiDayResponses.value.push({ date: day.fd_working_date, success: true, message: resultText });
+                            }
+                        } catch (err) {
+                            multiDayResponses.value.push({ date: day.fd_working_date, success: false, message: err.message });
+                        }
+
+                        multiDayCompleted.value = i + 1;
+                        multiDayProgress.value = Math.round(((i + 1) / multiDayData.value.days.length) * 100);
+                    }
+                    
+                    multiDaySubmitting.value = false;
+                };
+                
+                // 添加项目
+                const addProject = () => {
+                    distributionData.value.projects.push({
+                        fd_type_id: 1,
+                        fd_nature_id: 1,
+                        percentage: Math.floor(100 / (distributionData.value.projects.length + 1))
+                    });
+
+                    // 重新分配百分比
+                    updatePercentages();
+                };
+                
+                // 删除项目
+                const removeProject = (index) => {
+                    distributionData.value.projects.splice(index, 1);
+                    updatePercentages();
+                };
+                
+                // 更新百分比
+                const updatePercentages = () => {
+                    // 确保百分比总和为100
+                    const total = distributionData.value.projects.reduce((sum, project) => sum + parseInt(project.percentage || 0), 0);
+                    
+                    if (total !== 100) {
+                        // 如果只有两个项目，自动调整第二个项目的百分比
+                        if (distributionData.value.projects.length === 2) {
+                            distributionData.value.projects[1].percentage = 100 - (parseInt(distributionData.value.projects[0].percentage) || 0);
+                        }
+                    }
+                };
+
+                // 根据 fd_type_id 查找项目名称
+                const getProjectName = (id) => {
+                    const p = projectTypes.value.find(t => t.id == id);
+                    return p ? p.name : id;
+                };
+
+                // 根据 fd_nature_id 查找项目名称
+                const getProjectNatures = (id) => {
+                    const p = projectNatures.value.find(t => t.id == id);
+                    return p ? p.name : id;
+                };
+                
+                // 重置分配表单
+                const resetDistributionForm = () => {
+                    distributionData.value = {
+                        start_date: new Date().toISOString().split('T')[0],
+                        end_date: new Date().toISOString().split('T')[0],
+                        daily_total_hours: 8,
+                        fluctuation: 20,
+                        exclude_weekends: true,
+                        projects: [
+                                { 
+                                    fd_type_id: 1,
+                                    fd_nature_id: 1,
+                                    percentage: 40
+                                },
+                                { 
+                                    fd_type_id: 2,
+                                    fd_nature_id: 2,
+                                    percentage: 60
+                                }
+                            ],
+                        days: []
+                    };
+                    distributionResponses.value = [];
+                };
+                
+                // 生成分配计划（工时以0.5小时为步长）
+                    const generateDistribution = () => {
+                    distributionGenerating.value = true;
+
+                    // 验证分配表单必填字段
+                    if (!distributionData.value.start_date || !distributionData.value.end_date ||
+                        distributionData.value.daily_total_hours === '' || distributionData.value.daily_total_hours === null || typeof distributionData.value.daily_total_hours === 'undefined' ||
+                        distributionData.value.fluctuation === '' || distributionData.value.fluctuation === null || typeof distributionData.value.fluctuation === 'undefined' ||
+                        !distributionData.value.cookie) {
+                        alert('请填写所有必填字段：开始日期、结束日期、每日总工时、波动范围和Cookie');
+                        distributionGenerating.value = false;
+                        return;
+                    }
+
+                    // 校验每日总工时和波动范围
+                    const totalHoursNum = parseFloat(distributionData.value.daily_total_hours);
+                    const fluctuationNum = parseFloat(distributionData.value.fluctuation);
+                    if (isNaN(totalHoursNum) || totalHoursNum <= 0) {
+                        alert('请填写有效的每日总工时（大于0）');
+                        distributionGenerating.value = false;
+                        return;
+                    }
+                    if (isNaN(fluctuationNum) || fluctuationNum < 0) {
+                        alert('请填写有效的波动范围（>=0）');
+                        distributionGenerating.value = false;
+                        return;
+                    }
+
+                    // 验证每个项目的数据
+                    let valid = true;
+                    for (const project of distributionData.value.projects) {
+                        if (!project.fd_type_id || !project.fd_nature_id || project.percentage === '' || typeof project.percentage === 'undefined' || project.percentage === null) {
+                            alert('请填写所有项目的类型、性质和百分比');
+                            valid = false;
+                            break;
+                        }
+                    }
+
+                    if (!valid) {
+                        distributionGenerating.value = false;
+                        return;
+                    }
+
+                    // 计算总百分比
+                    const totalPercentage = distributionData.value.projects.reduce((sum, project) => sum + parseInt(project.percentage), 0);
+                    if (totalPercentage !== 100) {
+                        alert(`项目百分比总和应为100%，当前为${totalPercentage}%`);
+                        distributionGenerating.value = false;
+                        return;
+                    }
+
+                    // 辅助函数：四舍五入到0.5
+                    const roundToHalf = (n) => Math.round(n * 2) / 2;
+
+                    // 模拟生成数据的延迟
+                    setTimeout(() => {
+                        const startDate = new Date(distributionData.value.start_date);
+                        const endDate = new Date(distributionData.value.end_date);
+
+                        if (startDate > endDate) {
+                            alert('开始日期不能晚于结束日期');
+                            distributionGenerating.value = false;
+                            return;
+                        }
+
+                        const days = [];
+                        const currentDate = new Date(startDate);
+
+                        while (currentDate <= endDate) {
+                            // 检查是否排除周末
+                            const dayOfWeek = currentDate.getDay();
+                            const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+
+                            if (!distributionData.value.exclude_weekends || !isWeekend) {
+                                const dateStr = currentDate.toISOString().split('T')[0];
+                                const dayTasks = [];
+
+                                // 计算当天的总工时（添加随机波动），并将总工时四舍五入到0.5
+                                const fluctuation = distributionData.value.fluctuation / 100; // 转换为小数
+                                const randomFactor = 1 + (Math.random() * 2 - 1) * fluctuation; // 生成0.8到1.2之间的随机因子
+                                let dailyHours = distributionData.value.daily_total_hours * randomFactor;
+                                dailyHours = roundToHalf(dailyHours);// 总工时四舍五入到0.5
+                                // 不允许负数，总工时可以为0但不能为负
+                                dailyHours = Math.max(0, dailyHours);
+
+                                // 分配每个项目的工时（先按比例分配带小随机，再统一按比例缩放），不直接四舍五入，最后统一四舍五入到0.5并修正差值
+                                let remainingHours = dailyHours;
+                                let totalAllocated = 0;
+
+                                for (let i = 0; i < distributionData.value.projects.length; i++) {
+                                    const project = distributionData.value.projects[i];
+                                    let projectHours;
+
+                                    if (i === distributionData.value.projects.length - 1) {
+                                        // 最后一个项目，使用剩余工时
+                                        projectHours = remainingHours;
+                                    } else {
+                                        // 按比例分配，并添加小的随机波动
+                                        const percentage = project.percentage / 100;
+                                        const randomAdjust = 1 + (Math.random() * 0.4 - 0.2); // 0.8到1.2之间的随机因子
+                                        projectHours = roundToHalf(dailyHours * percentage * randomAdjust);//每个项目的工时也要四舍五入到0.5
+                                        remainingHours -= projectHours;
+                                    }
+
+                                    // 不允许负数（可以为0）
+                                    projectHours = Math.max(0, projectHours);
+
+                                    // 确保工时不小于0.5(不需要)
+                                    //projectHours = Math.max(0.5, projectHours);
+
+                                    dayTasks.push({
+                                        fd_type_id: project.fd_type_id,
+                                        fd_nature_id: project.fd_nature_id,
+                                        hours: projectHours
+                                    });
+
+                                    totalAllocated += projectHours;
+                                }
+
+                                // 调整工时，确保总和等于dailyHours（不需要）
+                                // const adjustmentFactor = dailyHours / totalAllocated;
+                                // for (const task of dayTasks) {
+                                //     task.hours = parseFloat((task.hours * adjustmentFactor).toFixed(1));
+                                // }
+
+                                // 重新计算总和
+                                const finalTotalDisplay = dayTasks.reduce((sum, task) => sum + task.hours, 0);
+
+                                days.push({
+                                    date: dateStr,
+                                    tasks: dayTasks,
+                                    totalHours: parseFloat(finalTotalDisplay.toFixed(1))
+                                });
+                            }
+
+                            currentDate.setDate(currentDate.getDate() + 1);
+                        }
+
+                        distributionData.value.days = days;
+
+                        // 更新统计信息
+                        distributionStats.value = {
+                            totalDays: days.length,
+                            totalHours: parseFloat(days.reduce((sum, day) => sum + day.totalHours, 0).toFixed(1)),
+                            projectCount: distributionData.value.projects.length
+                        };
+
+                        distributionGenerating.value = false;
+                    }, 800);
+                };
+                
+                // 提交分配计划
+                const submitDistribution = async () => {
+                    if (distributionData.value.days.length === 0) {
+                        alert('请先生成分配计划');
+                        return;
+                    }
+                    
+                    distributionSubmitting.value = true;
+                    distributionCompleted.value = 0;
+                    distributionResponses.value = [];
+                    
+                    // 计算总任务数
+                    let totalTasks = 0;
+                    for (const day of distributionData.value.days) {
+                        totalTasks += day.tasks.length;
+                    }
+                    
+                    distributionTotal.value = totalTasks;
+                    
+                    // 按天按任务提交（向代理服务器发送，每个任务包含 cookie）
+                    let taskIndex = 0;
+                    for (let dayIndex = 0; dayIndex < distributionData.value.days.length; dayIndex++) {
+                        const day = distributionData.value.days[dayIndex];
+
+                        for (let projectIndex = 0; projectIndex < day.tasks.length; projectIndex++) {
+                            const task = day.tasks[projectIndex];
+
+                            const formData = new URLSearchParams();
+                            formData.append('fd_type_id', task.fd_type_id);
+                            formData.append('fd_nature_id', task.fd_nature_id);
+                            formData.append('fd_working_date', day.date);
+                            formData.append('thisday', task.hours);
+                            if (distributionData.value.cookie) formData.append('cookie', distributionData.value.cookie);
+
+                            try {
+                                const response = await fetch(PROXY_URL, {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+                                    },
+                                    body: formData
+                                });
+
+                                if (!response.ok) {
+                                    distributionResponses.value.push({ date: day.date, projectName: getProjectName(task.fd_type_id), success: false, message: `HTTP ${response.status}` });
+                                } else {
+                                    const resultText = await response.text().catch(() => '提交成功');
+                                    distributionResponses.value.push({ date: day.date, projectName: getProjectName(task.fd_type_id), success: true, message: resultText });
+                                }
+                            } catch (err) {
+                                distributionResponses.value.push({ date: day.date, projectName: getProjectName(task.fd_type_id), success: false, message: err.message });
+                            }
+
+                            taskIndex++;
+                            distributionCompleted.value = taskIndex;
+                            distributionProgress.value = Math.round((taskIndex / totalTasks) * 100);
+                        }
+                    }
+                    
+                    distributionSubmitting.value = false;
+                };
+                
+                // 页面加载时设置默认值
+                onMounted(() => {
+                    // 设置默认日期
+                    const today = new Date();
+                    const nextWeek = new Date();
+                    nextWeek.setDate(today.getDate() + 7);
+                    
+                    multiDayData.value.end_date = nextWeek.toISOString().split('T')[0];
+                    distributionData.value.end_date = nextWeek.toISOString().split('T')[0];
                 });
-            });
-            
-            // 重置按钮事件
-            form.addEventListener('reset', function() {
-                responseBox.style.display = 'none';
-                // 重置日期为今天
-                document.getElementById('fd_working_date').value = today;
-            });
-        });
+                
+                // 监听百分比变化
+                watch(() => distributionData.value.projects, () => {
+                    updatePercentages();
+                }, { deep: true });
+                
+                return {
+                    activeTab,
+                    tabs,
+                    projectTypes,
+                    projectNatures,
+                    singleDayData,
+                    singleSubmitting,
+                    singleDayResponse,
+                    singleDaySuccess,
+                    multiDayData,
+                    multiDayGenerating,
+                    multiDaySubmitting,
+                    multiDayProgress,
+                    multiDayCompleted,
+                    multiDayTotal,
+                    multiDayResponses,
+                    distributionData,
+                    distributionGenerating,
+                    distributionSubmitting,
+                    distributionProgress,
+                    distributionCompleted,
+                    distributionTotal,
+                    distributionResponses,
+                    distributionStats,
+                    switchTab,
+                    resetSingleDayForm,
+                    submitSingleDay,
+                    generateMultiDays,
+                    resetMultiDayForm,
+                    submitMultiDays,
+                    addProject,
+                    removeProject,
+                    updatePercentages,
+                    resetDistributionForm,
+                    generateDistribution,
+                    generateDistribution,
+                    submitDistribution,
+                    getProjectName,
+                    getProjectNatures
+                };
+            }
+        }).mount('#app');
     </script>
 </body>
 </html>

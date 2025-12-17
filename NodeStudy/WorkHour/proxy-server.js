@@ -43,8 +43,8 @@ app.post('/proxy/working-hours', (req, res) => {
             return res.status(500).json({ error: '代理请求失败: ' + error.message });
         }
         
-        console.log('Response from target server:', body);
-        console.log('Response headers from target server:', response.headers);
+        //console.log('Response from target server:', body);
+        //console.log('Response headers from target server:', response.headers);
         // 将目标服务器的响应返回给前端
         res.status(response.statusCode).send(body);
     });
