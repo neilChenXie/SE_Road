@@ -973,7 +973,7 @@
                     formData.append('fd_type_id', singleDayData.value.fd_type_id);
                     formData.append('fd_nature_id', singleDayData.value.fd_nature_id);
                     formData.append('fd_working_date', singleDayData.value.fd_working_date);
-                    formData.append('thisday', singleDayData.value.thisday);
+                    formData.append('thisday', singleDayData.value.thisday > 0 ? singleDayData.value.thisday : '');
                     // 传递 cookie 字段到代理服务器
                     formData.append('cookie', singleDayData.value.cookie);
                     
@@ -1103,7 +1103,7 @@
                         formData.append('fd_type_id', day.fd_type_id);
                         formData.append('fd_nature_id', day.fd_nature_id);
                         formData.append('fd_working_date', day.fd_working_date);
-                        formData.append('thisday', day.thisday);
+                        formData.append('thisday', day.thisday > 0 ? day.thisday : '');
                         if (day.cookie) formData.append('cookie', day.cookie);
 
                         try {
@@ -1382,7 +1382,7 @@
                             formData.append('fd_type_id', task.fd_type_id);
                             formData.append('fd_nature_id', task.fd_nature_id);
                             formData.append('fd_working_date', day.date);
-                            formData.append('thisday', task.hours);
+                            formData.append('thisday', task.hours > 0 ? task.hours : '');
                             if (distributionData.value.cookie) formData.append('cookie', distributionData.value.cookie);
 
                             try {
