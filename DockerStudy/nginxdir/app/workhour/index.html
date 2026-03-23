@@ -834,7 +834,7 @@
         const PROXY_URL = 'http://localhost:3001/proxy/working-hours';
 
         const { createApp, ref, onMounted, watch } = Vue;
-        
+
         createApp({
             setup() {
                 // 选项卡状态
@@ -844,25 +844,12 @@
                     { name: '多日工时提交' },
                     { name: '按比例分配工时' }
                 ];
-                
-                // 项目名称
-                const projectTypes = ref([
-                    { id: '1931a7d931b170272c132c6480794d78', name: '航道投标' },
-                    { id: "18d5096a70a4895d196e85948d593c39", name: '阳江闸坡智慧渔港' },
-                    { id: "19766ca7011a697618ab63e46cface6c", name: '渔港经济区' },
-                    { id: "197638ddd1664be025af4654ee4913c7", name: 'AI-学习' },
-                    { id: "19072987378cff59df5c03d47028600d", name: '阳江风电运维基地' },
-                    { id: "19072bbe83dd3aabbebe92241e99eb69", name: '职能工作' },
-                    { id: "1907bcaf09290450c261b984792b450d", name: '党建工作' }
-                ]);
-                
-                //工作类型
-                const projectNatures = ref([
-                    { id: "18d4a164d9d08188ab25b1b42d9bbf9a", name: '成果输出' },
-                    { id: "18d4a171bb318a573c5788648cca3d29", name: '差旅' },
-                    { id: "18d4a16d252c3e6e790ea304cfc825a0", name: '内部讨论' },
-                    { id: "18d4a16f629a5cec35e699a4ca48eca2", name: '外部接待' }
-                ]);
+
+                // 项目名称（从数据库获取）
+                const projectTypes = ref([]);
+
+                //工作类型（从数据库获取）
+                const projectNatures = ref([]);
                 
                 // 单日工时数据
                 const singleDayData = ref({
@@ -1413,15 +1400,39 @@
                     distributionSubmitting.value = false;
                 };
                 
+                // 从数据库获取项目名称和工作性质
+                const fetchProjectData = async () => {
+                    try {
+                        const [typesRes, naturesRes] = await Promise.all([
+                            fetch('http://localhost:3002/api/project-types'),
+                            fetch('http://localhost:3002/api/project-natures')
+                        ]);
+                        const typesData = await typesRes.json();
+                        const naturesData = await naturesRes.json();
+
+                        if (typesData.success) {
+                            projectTypes.value = typesData.data;
+                        }
+                        if (naturesData.success) {
+                            projectNatures.value = naturesData.data;
+                        }
+                    } catch (error) {
+                        console.error('获取项目数据失败:', error);
+                    }
+                };
+
                 // 页面加载时设置默认值
                 onMounted(() => {
                     // 设置默认日期
                     const today = new Date();
                     const nextWeek = new Date();
                     nextWeek.setDate(today.getDate() + 7);
-                    
+
                     multiDayData.value.end_date = nextWeek.toISOString().split('T')[0];
                     distributionData.value.end_date = nextWeek.toISOString().split('T')[0];
+
+                    // 从数据库获取项目数据
+                    fetchProjectData();
                 });
                 
                 // 监听百分比变化
